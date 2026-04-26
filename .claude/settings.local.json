@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import docx; import pytest; print\\('docx:', docx.__version__ if hasattr\\(docx, '__version__'\\) else 'ok'\\); print\\('pytest:', pytest.__version__\\)\")",
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/Scripts/python -m pip install --upgrade pip)",
+      "Bash(.venv/Scripts/python -m pip install -r requirements.txt)"
+    ]
+  }
+}
