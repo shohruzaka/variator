@@ -7,6 +7,7 @@ Faqat fayl yozish bilan shug'ullanadi.
 
 import os
 from pathlib import Path
+from typing import Callable
 
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
@@ -84,13 +85,32 @@ def _add_answer_table(doc: Document, num_questions: int):
         p_space = doc.add_paragraph()
         p_space.paragraph_format.space_after = Pt(6)
 
-def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, font_size: int = 12) -> list[Path]:
+def _add_formatted_runs(paragraph, text: str):
+    """Matn ichidagi `kod` qismlarini ajratib, alohida shrift (Consolas) beradi."""
+    parts = text.split('`')
+    for i, part in enumerate(parts):
+        if not part:
+            continue
+        run = paragraph.add_run(part)
+        if i % 2 == 1:  # ` ichidagi qism (toq indekslar)
+            run.font.name = 'Consolas'
+            # run.font.color.rgb = RGBColor(190, 30, 45) # Agar xohlasangiz kodni to'q qizil rangda ham qilish mumkin
+        else:
+            pass # Asosiy shrift (Times New Roman) meros qilib olinadi
+
+def export_variants_to_docx(
+    variants: list[Variant], 
+    output_dir: str | Path, 
+    font_size: int = 12,
+    progress_cb: Callable[[int, int], None] | None = None
+) -> list[Path]:
     """Variantlarni alohida Word fayllariga yozadi.
 
     Args:
         variants: Generatsiya qilingan test variantlari ro'yxati.
         output_dir: Fayllar saqlanadigan papka manzili.
         font_size: Word hujjatining shrift o'lchami (standart 12).
+        progress_cb: Jarayonni foizda ko'rsatish uchun callback.
 
     Returns:
         Yaratilgan fayllarning to'liq manzillari ro'yxati.
@@ -100,7 +120,7 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
     
     saved_files: list[Path] = []
 
-    for variant in variants:
+    for idx, variant in enumerate(variants):
         doc = Document()
         
         # Formatni qo'llash (Albom, 3 ta kalonka, belgilangan shrift)
@@ -120,13 +140,15 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
         # Har bir savolni yozish
         for q in variant.questions:
             # Savol matni (q.number bilan)
-            p_q = doc.add_paragraph(f"{q.number}. {q.text}")
+            p_q = doc.add_paragraph()
+            _add_formatted_runs(p_q, f"{q.number}. {q.text}")
             p_q.paragraph_format.space_after = Pt(2)  # Savol va uning variantlari orasini yanada yaqinlashtirish
             
             # Variantlarni yozish
             for i, opt in enumerate(q.options):
-                p_opt = doc.add_paragraph(f"{opt.letter}) {opt.text}")
-                
+                p_opt = doc.add_paragraph()
+                _add_formatted_runs(p_opt, f"{opt.letter}) {opt.text}")
+
                 # Agar bu oxirgi variant (D) bo'lsa, keyingi savoldan ajralib turishi uchun ozroq bo'shliq tashlaymiz
                 if i == len(q.options) - 1:
                     p_opt.paragraph_format.space_after = Pt(8)
@@ -141,16 +163,25 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
         doc.save(str(file_path))
         saved_files.append(file_path)
 
+        if progress_cb:
+            progress_cb(idx + 1, len(variants))
+
     return saved_files
 
 
-def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str | Path, font_size: int = 12) -> Path:
+def export_all_variants_to_single_docx(
+    variants: list[Variant], 
+    output_dir: str | Path, 
+    font_size: int = 12,
+    progress_cb: Callable[[int, int], None] | None = None
+) -> Path:
     """Barcha variantlarni bitta Word fayliga yozadi (har biri yangi varaqdan boshlanadi).
 
     Args:
         variants: Generatsiya qilingan test variantlari ro'yxati.
         output_dir: Fayl saqlanadigan papka manzili.
         font_size: Word hujjatining shrift o'lchami (standart 12).
+        progress_cb: Jarayonni foizda ko'rsatish uchun callback.
 
     Returns:
         Yaratilgan faylning to'liq manzili.
@@ -174,10 +205,12 @@ def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str 
         p_info.paragraph_format.space_after = Pt(12)
         
         for q in variant.questions:
-            p_q = doc.add_paragraph(f"{q.number}. {q.text}")
+            p_q = doc.add_paragraph()
+            _add_formatted_runs(p_q, f"{q.number}. {q.text}")
             p_q.paragraph_format.space_after = Pt(2)
             for i, opt in enumerate(q.options):
-                p_opt = doc.add_paragraph(f"{opt.letter}) {opt.text}")
+                p_opt = doc.add_paragraph()
+                _add_formatted_runs(p_opt, f"{opt.letter}) {opt.text}")
                 p_opt.paragraph_format.space_after = Pt(8) if i == len(q.options) - 1 else Pt(0)
                 
         # Jadval qo'shish
@@ -185,6 +218,9 @@ def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str 
         
         if idx < len(variants) - 1:
             doc.add_page_break()  # Keyingi variantni yangi sahifadan boshlash
+            
+        if progress_cb:
+            progress_cb(idx + 1, len(variants))
             
     file_path = out_path / "Barcha_variantlar.docx"
     doc.save(str(file_path))

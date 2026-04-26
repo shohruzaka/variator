@@ -44,16 +44,6 @@ class FileAnalysis:
 ctk.set_appearance_mode("System")  # Yorug' va Qorong'u rejimlarni avtomatik qabul qiladi
 ctk.set_default_color_theme("blue")
 
-# Icon fontni yuklash (FontAwesome misolida)
-FONT_DIR = Path(__file__).parent.parent / "assets" / "fonts"
-FA_FONT_PATH = FONT_DIR / "fa-solid-900.ttf"
-
-if FA_FONT_PATH.exists():
-    ctk.FontManager.load_font(str(FA_FONT_PATH))
-    ICON_FAMILY = "Font Awesome 6 Free Solid" # FontAwesome'ning ichki nomi
-else:
-    ICON_FAMILY = "Inter" # Agar font topilmasa, xato bermasligi uchun
-
 class VariatorApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -116,10 +106,10 @@ class VariatorApp(ctk.CTk):
         self.btn_group = ctk.CTkFrame(self.file_header, fg_color="transparent")
         self.btn_group.grid(row=0, column=1, sticky="e")
 
-        self.select_btn = ctk.CTkButton(self.btn_group, text="+ Qo'shish", width=130, height=36, command=self.select_files, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", font=("Inter", 14, "bold"), corner_radius=12)
+        self.select_btn = ctk.CTkButton(self.btn_group, text="Qo'shish", width=130, height=36, command=self.select_files, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", font=("Inter", 14, "bold"), corner_radius=12)
         self.select_btn.pack(side="left", padx=(0, 12))
 
-        self.clear_btn = ctk.CTkButton(self.btn_group, text="🗑 Tozalash", width=110, height=36, fg_color=("#EF4444", "#E03131"), hover_color=("#DC2626", "#C92A2A"), text_color="#FFFFFF", font=("Inter", 14, "bold"), corner_radius=12, command=self.clear_files)
+        self.clear_btn = ctk.CTkButton(self.btn_group, text="Tozalash", width=110, height=36, fg_color=("#EF4444", "#E03131"), hover_color=("#DC2626", "#C92A2A"), text_color="#FFFFFF", font=("Inter", 14, "bold"), corner_radius=12, command=self.clear_files)
         self.clear_btn.pack(side="left")
 
         self.file_listbox = ctk.CTkScrollableFrame(self.file_frame, fg_color="transparent", corner_radius=0)
@@ -130,13 +120,13 @@ class VariatorApp(ctk.CTk):
         self.stats_frame.grid(row=2, column=0, padx=24, pady=(0, 24), sticky="ew")
         self.stats_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-        self.stat_files_lbl = ctk.CTkLabel(self.stats_frame, text="📁 Jami fayllar: 0", font=("Inter", 13, "bold"), text_color=("#374151", "#D1D5DB"))
+        self.stat_files_lbl = ctk.CTkLabel(self.stats_frame, text="Jami fayllar: 0", font=("Inter", 13, "bold"), text_color=("#374151", "#D1D5DB"))
         self.stat_files_lbl.grid(row=0, column=0, pady=12, padx=10)
 
-        self.stat_qs_lbl = ctk.CTkLabel(self.stats_frame, text="📝 Jami savollar: 0", font=("Inter", 13, "bold"), text_color=("#374151", "#D1D5DB"))
+        self.stat_qs_lbl = ctk.CTkLabel(self.stats_frame, text="Jami savollar: 0", font=("Inter", 13, "bold"), text_color=("#374151", "#D1D5DB"))
         self.stat_qs_lbl.grid(row=0, column=1, pady=12, padx=10)
 
-        self.stat_err_lbl = ctk.CTkLabel(self.stats_frame, text="✅ Xatoliklar: 0", font=("Inter", 13, "bold"), text_color=("#10B981", "#34D399"))
+        self.stat_err_lbl = ctk.CTkLabel(self.stats_frame, text="Xatoliklar: 0", font=("Inter", 13, "bold"), text_color=("#10B981", "#34D399"))
         self.stat_err_lbl.grid(row=0, column=2, pady=12, padx=10)
 
         self._update_file_listbox()
@@ -146,7 +136,7 @@ class VariatorApp(ctk.CTk):
         self.settings_frame.grid(row=0, column=1, padx=(15, 30), pady=(30, 15), sticky="nsew")
         self.settings_frame.grid_columnconfigure(0, weight=1)
 
-        self.settings_title = ctk.CTkLabel(self.settings_frame, text="⚙️ Generatsiya sozlamalari", font=("Inter", 18, "bold"), text_color=("#1A1B1E", "#F1F3F5"))
+        self.settings_title = ctk.CTkLabel(self.settings_frame, text="Generatsiya sozlamalari", font=("Inter", 18, "bold"), text_color=("#1A1B1E", "#F1F3F5"))
         self.settings_title.grid(row=0, column=0, padx=24, pady=(24, 16), sticky="w")
 
         self.count_label = ctk.CTkLabel(self.settings_frame, text="Variantlar soni:", text_color=("#6B7280", "#A1A1AA"), font=("Inter", 14))
@@ -157,7 +147,8 @@ class VariatorApp(ctk.CTk):
 
         self.q_label = ctk.CTkLabel(self.settings_frame, text="Savollar soni (bo'sh = barchasi):", text_color=("#6B7280", "#A1A1AA"), font=("Inter", 14))
         self.q_label.grid(row=3, column=0, padx=24, pady=(4, 4), sticky="w")
-        self.q_entry = ctk.CTkEntry(self.settings_frame, placeholder_text="Barcha savollar", fg_color=("#F5F7FA", "#1E1F25"), border_color=("#E5E7EB", "#3F3F46"), text_color=("#1A1B1E", "#F1F3F5"), height=36, font=("Inter", 14), corner_radius=8, validate="key", validatecommand=self.vcmd)
+        self.q_entry = ctk.CTkEntry(self.settings_frame, fg_color=("#F5F7FA", "#1E1F25"), border_color=("#E5E7EB", "#3F3F46"), text_color=("#1A1B1E", "#F1F3F5"), height=36, font=("Inter", 14), corner_radius=8, validate="key", validatecommand=self.vcmd)
+        self.q_entry.insert(0, "20")
         self.q_entry.grid(row=4, column=0, padx=24, pady=(0, 16), sticky="ew")
 
         self.font_label = ctk.CTkLabel(self.settings_frame, text="Shrift o'lchami:", text_color=("#6B7280", "#A1A1AA"), font=("Inter", 14))
@@ -178,7 +169,7 @@ class VariatorApp(ctk.CTk):
         self.out_entry.configure(state="readonly")
         self.out_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
         
-        self.out_btn = ctk.CTkButton(self.out_frame, text="📁", width=40, height=36, corner_radius=8, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", font=("Inter", 14), command=self.select_output_dir)
+        self.out_btn = ctk.CTkButton(self.out_frame, text="Tanlash", width=70, height=36, corner_radius=8, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", font=("Inter", 13, "bold"), command=self.select_output_dir)
         self.out_btn.grid(row=0, column=1)
 
         # ==================== 3. Harakat (Action) hududi ====================
@@ -192,8 +183,9 @@ class VariatorApp(ctk.CTk):
         self.generate_single_btn = ctk.CTkButton(self.action_frame, text="Bitta faylga", font=("Inter", 16, "bold"), height=48, corner_radius=14, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", command=lambda: self.start_generation(single_file=True))
         self.generate_single_btn.grid(row=1, column=0, pady=(0, 12), sticky="ew")
 
-        self.progress_bar = ctk.CTkProgressBar(self.action_frame, mode="indeterminate", fg_color=("#E5E7EB", "#3F3F46"), progress_color=("#4C6EF5", "#7C9CFF"), height=6)
+        self.progress_bar = ctk.CTkProgressBar(self.action_frame, mode="determinate", fg_color=("#E5E7EB", "#3F3F46"), progress_color=("#4C6EF5", "#7C9CFF"), height=6)
         self.progress_bar.grid(row=2, column=0, pady=(8, 0), sticky="ew")
+        self.progress_bar.set(0)
         self.progress_bar.grid_remove()  # Boshida yashirin turadi
 
     def select_files(self):
@@ -238,7 +230,7 @@ class VariatorApp(ctk.CTk):
             widget.destroy()
 
         if not self.selected_files:
-            lbl = ctk.CTkLabel(self.file_listbox, text="📥 Fayllar ro'yxati bo'sh. Yuqoridagi '+ Qo'shish' tugmasini bosing.", text_color=("#6B7280", "#A1A1AA"), font=("Inter", 14))
+            lbl = ctk.CTkLabel(self.file_listbox, text="Fayllar ro'yxati bo'sh. Yuqoridagi 'Qo'shish' tugmasini bosing.", text_color=("#6B7280", "#A1A1AA"), font=("Inter", 14))
             lbl.pack(pady=40)
             self._update_statistics()
             return
@@ -256,13 +248,13 @@ class VariatorApp(ctk.CTk):
         validation_errors = sum(a.xato_count for a in self.file_analysis.values() if a.parse_error is None)
         total_errors = parse_errors + validation_errors
 
-        self.stat_files_lbl.configure(text=f"📁 Jami fayllar: {total_files}")
-        self.stat_qs_lbl.configure(text=f"📝 Jami savollar: {total_questions}")
+        self.stat_files_lbl.configure(text=f"Jami fayllar: {total_files}")
+        self.stat_qs_lbl.configure(text=f"Jami savollar: {total_questions}")
 
         if total_errors > 0:
-            self.stat_err_lbl.configure(text=f"⚠️ Xatoliklar: {total_errors}", text_color=("#EF4444", "#F87171"))
+            self.stat_err_lbl.configure(text=f"Xatoliklar: {total_errors}", text_color=("#EF4444", "#F87171"))
         else:
-            self.stat_err_lbl.configure(text=f"✅ Xatoliklar: 0", text_color=("#10B981", "#34D399"))
+            self.stat_err_lbl.configure(text=f"Xatoliklar: 0", text_color=("#10B981", "#34D399"))
 
     def _build_file_card(self, f: Path) -> None:
         """Bitta fayl uchun card yaratadi: holatga qarab yashil/qizil chegara."""
@@ -282,11 +274,8 @@ class VariatorApp(ctk.CTk):
         card.pack(fill="x", pady=3, padx=8, ipady=2)
         card.grid_columnconfigure(1, weight=1)
 
-        icon = ctk.CTkLabel(card, text="\uf15b", font=(ICON_FAMILY, 20), text_color=("#6B7280", "#A1A1AA"))
-        icon.grid(row=0, column=0, padx=(14, 20), pady=4)
-
         info = ctk.CTkFrame(card, fg_color="transparent")
-        info.grid(row=0, column=1, sticky="ew", pady=4)
+        info.grid(row=0, column=0, sticky="ew", padx=(16, 0), pady=4)
         info.grid_columnconfigure(0, weight=1)
 
         name_lbl = ctk.CTkLabel(
@@ -311,10 +300,10 @@ class VariatorApp(ctk.CTk):
 
         del_btn = ctk.CTkButton(
             card,
-            text="\uf2ed",
-            width=28,
+            text="O'chirish",
+            width=70,
             height=28,
-            font=(ICON_FAMILY, 14),
+            font=("Inter", 12, "bold"),
             corner_radius=8,
             fg_color="transparent",
             border_width=1,
@@ -327,7 +316,7 @@ class VariatorApp(ctk.CTk):
 
         if clickable:
             handler = lambda _e, p=f: self._show_file_errors(p)
-            for w in (card, icon, info, name_lbl, status_lbl):
+            for w in (card, info, name_lbl, status_lbl):
                 w.bind("<Button-1>", handler)
                 try:
                     w.configure(cursor="hand2")
@@ -417,15 +406,23 @@ class VariatorApp(ctk.CTk):
             return
 
         # 3. Tugmani bloklash va jarayonni fonda boshlash
-        self.generate_btn.configure(state="disabled", text="Kuting...")
-        self.generate_single_btn.configure(state="disabled", text="Kuting...")
+        self.generate_btn.configure(state="disabled", text="Tayyorlanmoqda... 0%")
+        self.generate_single_btn.configure(state="disabled", text="Tayyorlanmoqda... 0%")
         self.progress_bar.grid()  # Progress barni ko'rsatish
-        self.progress_bar.start() # Animatsiyani boshlash
+        self.progress_bar.set(0)
         threading.Thread(target=self._run_generation_task, args=(count, qpv, font_size, single_file), daemon=True).start()
+
+    def _update_progress(self, percent: int):
+        """Generatsiya foizini yangilaydi."""
+        text = f"Tayyorlanmoqda... {percent}%"
+        self.generate_btn.configure(text=text)
+        self.generate_single_btn.configure(text=text)
+        self.progress_bar.set(percent / 100.0)
 
     def _run_generation_task(self, count: int, qpv: int | None, font_size: int, single_file: bool):
         """Generatsiyani alohida thread'da bajaradi."""
         try:
+            self.after(0, lambda: self._update_progress(5))
             cfg = Config.load()
             output_dir = self.output_dir if self.output_dir else Path(cfg.output_dir)
 
@@ -444,6 +441,8 @@ class VariatorApp(ctk.CTk):
                     return
                 all_questions.extend(analysis.questions)
 
+            self.after(0, lambda: self._update_progress(15))
+
             if not all_questions:
                 self.after(0, lambda: messagebox.showerror("Xato", "Kiritilgan fayllardan hech qanday savol topilmadi."))
                 return
@@ -454,6 +453,8 @@ class VariatorApp(ctk.CTk):
                 self.after(0, lambda: self._show_validation_errors(errors))
                 return
 
+            self.after(0, lambda: self._update_progress(25))
+
             # Generatsiya
             variants = generate_variants(
                 all_questions,
@@ -462,13 +463,22 @@ class VariatorApp(ctk.CTk):
                 questions_per_variant=qpv
             )
 
+            self.after(0, lambda: self._update_progress(35))
+
+            def progress_cb(current: int, total: int):
+                pct = 35 + int((current / total) * 55) # 35% dan 90% gacha dinamik yangilash
+                self.after(0, lambda: self._update_progress(pct))
+
             # Eksport
             if single_file:
-                export_all_variants_to_single_docx(variants, output_dir, font_size=font_size)
+                export_all_variants_to_single_docx(variants, output_dir, font_size=font_size, progress_cb=progress_cb)
             else:
-                export_variants_to_docx(variants, output_dir, font_size=font_size)
+                export_variants_to_docx(variants, output_dir, font_size=font_size, progress_cb=progress_cb)
+            
+            self.after(0, lambda: self._update_progress(95))
             export_answers_to_docx(variants, output_dir / "Javoblar.docx")
             export_answers_to_xlsx(variants, output_dir / "Javoblar.xlsx")
+            self.after(0, lambda: self._update_progress(100))
 
             # Muvaffaqiyat xabari
             self.after(0, lambda: self._show_success(output_dir))
@@ -480,7 +490,6 @@ class VariatorApp(ctk.CTk):
             self.after(0, self._reset_action_ui)
 
     def _reset_action_ui(self):
-        self.progress_bar.stop()
         self.progress_bar.grid_remove()
         self.generate_btn.configure(state="normal", text="Alohida fayllarga")
         self.generate_single_btn.configure(state="normal", text="Bitta faylga")
@@ -497,7 +506,7 @@ class VariatorApp(ctk.CTk):
         header_frame = ctk.CTkFrame(err_window, fg_color="transparent")
         header_frame.pack(fill="x", padx=30, pady=(30, 15))
 
-        title_lbl = ctk.CTkLabel(header_frame, text="⚠️ Xatoliklar aniqlandi", font=("Inter", 22, "bold"), text_color=("#EF4444", "#F87171"))
+        title_lbl = ctk.CTkLabel(header_frame, text="Xatoliklar aniqlandi", font=("Inter", 22, "bold"), text_color=("#EF4444", "#F87171"))
         title_lbl.pack(anchor="w")
 
         sub_lbl = ctk.CTkLabel(header_frame, text="Generatsiyani davom ettirish uchun avval quyidagi xatolarni Word faylida to'g'rilang.", font=("Inter", 14), text_color=("#6B7280", "#A1A1AA"))
@@ -525,7 +534,7 @@ class VariatorApp(ctk.CTk):
             top_layout = ctk.CTkFrame(card, fg_color="transparent")
             top_layout.pack(fill="x", padx=16, pady=(12, 4))
 
-            file_lbl = ctk.CTkLabel(top_layout, text=f"📄 {err.source_file}   •   Savol #{err.question_number}", font=("Inter", 13, "bold"), text_color=("#6B7280", "#A1A1AA"))
+            file_lbl = ctk.CTkLabel(top_layout, text=f"{err.source_file}   •   Savol #{err.question_number}", font=("Inter", 13, "bold"), text_color=("#6B7280", "#A1A1AA"))
             file_lbl.pack(side="left")
 
             badge = ctk.CTkLabel(top_layout, text=badge_text, font=("Inter", 11, "bold"), fg_color=badge_bg, text_color=badge_fg, corner_radius=6, height=24)
@@ -551,11 +560,8 @@ class VariatorApp(ctk.CTk):
         succ_window.grab_set()
         succ_window.configure(fg_color=("#FFFFFF", "#2A2B32"))
 
-        icon_lbl = ctk.CTkLabel(succ_window, text="🎉", font=("Inter", 48))
-        icon_lbl.pack(pady=(20, 10))
-
         msg_lbl = ctk.CTkLabel(succ_window, text="Variantlar muvaffaqiyatli yaratildi!", font=("Inter", 16, "bold"), text_color=("#10B981", "#34D399"))
-        msg_lbl.pack()
+        msg_lbl.pack(pady=(40, 0))
 
         sub_lbl = ctk.CTkLabel(succ_window, text="Natijalar saqlangan papkani ochishni xohlaysizmi?", font=("Inter", 13), text_color=("#6B7280", "#A1A1AA"))
         sub_lbl.pack(pady=(5, 20))
