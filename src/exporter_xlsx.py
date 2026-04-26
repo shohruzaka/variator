@@ -50,7 +50,7 @@ def export_answers_to_xlsx(variants: list[Variant], output_path: str | Path) -> 
 
     # 2. Har bir variant javoblarini yozish
     for variant in variants:
-        row_data = [f"{variant.number}-Variant"] + variant.answer_key
+        row_data = [f"{variant.number}-variant"] + variant.answer_key
         ws.append(row_data)
 
     # Hujayralarni markazlashtirish (Variant nomidan tashqari)

@@ -51,6 +51,26 @@ D) Brauzer
 - Savollar oddiy matn orqali (masalan: `1. `) yoki Word avto-numerlash xususiyati orqali terilishi mumkin.
 - Ko'p qatorli savollar (kod bloklari) qo'llab-quvvatlanadi.
 
+## Ishlatish (Grafik interfeys — GUI)
+
+Eng oson usul — grafik oynani ishga tushirish. Buyruq qatorini bilmasangiz ham ishlatishingiz mumkin:
+
+```bash
+python -m src.gui
+```
+
+Oynada:
+
+1. **"+ Qo'shish"** tugmasi orqali bir yoki bir nechta `.docx` test bankini tanlang.
+2. Sozlamalarni kiriting: variantlar soni, har variantdagi savollar soni (bo'sh qoldirsangiz — barchasi), shrift o'lchami.
+3. Yaratish usulini tanlang:
+   - **🚀 Alohida fayllarga** — har bir variant alohida `Variant_1.docx`, `Variant_2.docx` ... ko'rinishida.
+   - **📄 Bitta faylga** — barcha variantlar bitta `Barcha_Variantlar.docx` ichida (har biri yangi sahifadan).
+4. Validatsiya xatolari topilsa, alohida oynada savol raqamlari bilan ko'rsatiladi.
+5. Tugagandan so'ng natijalar papkasini ochish taklif qilinadi.
+
+> **Eslatma:** Natijalar papkasi `config.yaml` dagi `output_dir` qiymatidan olinadi (standart: `output/`). GUI orqali papkani har safar qayta tanlash imkoni hozircha yo'q — boshqa papka kerak bo'lsa, `config.yaml` ni tahrirlang.
+
 ## Ishlatish (Buyruq qatori)
 
 Dasturni eng oddiy ko'rinishda quyidagicha ishga tushirish mumkin:

@@ -107,7 +107,7 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
         _setup_document_format(doc, font_size)
         
         # Sarlavha
-        heading = doc.add_heading(f"{variant.number}-variant", level=1)
+        heading = doc.add_heading(f"{variant.number}-Variant", level=1)
         heading.style.font.name = 'Times New Roman'
         heading.paragraph_format.space_before = Pt(0)
         heading.paragraph_format.space_after = Pt(0)
@@ -164,7 +164,7 @@ def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str 
     _setup_document_format(doc, font_size)
 
     for idx, variant in enumerate(variants):
-        heading = doc.add_heading(f"{variant.number}-variant", level=1)
+        heading = doc.add_heading(f"{variant.number}-Variant", level=1)
         heading.style.font.name = 'Times New Roman'
         heading.paragraph_format.space_before = Pt(0)
         heading.paragraph_format.space_after = Pt(0)
