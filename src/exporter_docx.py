@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 
 from docx import Document
-from docx.shared import Pt, Inches
+from docx.shared import Pt, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENT
 from docx.oxml import OxmlElement
@@ -107,7 +107,7 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
         _setup_document_format(doc, font_size)
         
         # Sarlavha
-        heading = doc.add_heading(f"{variant.number}-Variant", level=1)
+        heading = doc.add_heading(f"{variant.number}-variant", level=1)
         heading.style.font.name = 'Times New Roman'
         heading.paragraph_format.space_before = Pt(0)
         heading.paragraph_format.space_after = Pt(0)
@@ -136,7 +136,7 @@ def export_variants_to_docx(variants: list[Variant], output_dir: str | Path, fon
         # Jadval qo'shish
         _add_answer_table(doc, len(variant.questions))
         
-        file_name = f"Variant_{variant.number}.docx"
+        file_name = f"{variant.number}-variant.docx"
         file_path = out_path / file_name
         doc.save(str(file_path))
         saved_files.append(file_path)
@@ -164,7 +164,7 @@ def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str 
     _setup_document_format(doc, font_size)
 
     for idx, variant in enumerate(variants):
-        heading = doc.add_heading(f"{variant.number}-Variant", level=1)
+        heading = doc.add_heading(f"{variant.number}-variant", level=1)
         heading.style.font.name = 'Times New Roman'
         heading.paragraph_format.space_before = Pt(0)
         heading.paragraph_format.space_after = Pt(0)
@@ -186,7 +186,7 @@ def export_all_variants_to_single_docx(variants: list[Variant], output_dir: str 
         if idx < len(variants) - 1:
             doc.add_page_break()  # Keyingi variantni yangi sahifadan boshlash
             
-    file_path = out_path / "Barcha_Variantlar.docx"
+    file_path = out_path / "Barcha_variantlar.docx"
     doc.save(str(file_path))
     return file_path
 
@@ -205,14 +205,38 @@ def export_answers_to_docx(variants: list[Variant], output_path: str | Path) -> 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     doc = Document()
-    doc.add_heading("Javoblar kaliti", level=1)
+    title = doc.add_heading("Javoblar kaliti", level=1)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     for variant in variants:
-        doc.add_heading(f"{variant.number}-Variant", level=2)
+        h2 = doc.add_heading(f"{variant.number}-variant", level=2)
+        h2.paragraph_format.space_before = Pt(16)
+        h2.paragraph_format.space_after = Pt(8)
         
-        # Javoblarni ixcham formatda yozish: "1-A, 2-C, 3-B, ..."
-        answers_text = ", ".join(f"{i+1}-{ans}" for i, ans in enumerate(variant.answer_key))
-        doc.add_paragraph(answers_text)
+        chunk_size = 10
+        ans_len = len(variant.answer_key)
+        
+        for i in range(0, ans_len, chunk_size):
+            chunk = min(chunk_size, ans_len - i)
+            table = doc.add_table(rows=2, cols=chunk)
+            table.style = 'Table Grid'
+            
+            for j in range(chunk):
+                q_num = i + j + 1
+                ans = variant.answer_key[i + j]
+                
+                cell_top = table.cell(0, j)
+                cell_top.text = str(q_num)
+                cell_top.paragraphs[0].runs[0].bold = True
+                cell_top.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                
+                cell_bottom = table.cell(1, j)
+                cell_bottom.text = ans
+                cell_bottom.paragraphs[0].runs[0].bold = True
+                cell_bottom.paragraphs[0].runs[0].font.color.rgb = RGBColor(0, 112, 192) # Ko'k rangda
+                cell_bottom.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            
+            doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
     doc.save(str(out_path))
     return out_path

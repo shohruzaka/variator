@@ -292,11 +292,12 @@ class VariatorApp(ctk.CTk):
         name_lbl = ctk.CTkLabel(
             info,
             text=f.name,
-            font=("Inter", 13, "bold"),
+            font=("Inter", 15, "bold"),
             text_color=("#1A1B1E", "#F1F3F5"),
             anchor="w",
+            height=20,
         )
-        name_lbl.grid(row=0, column=0, sticky="w")
+        name_lbl.grid(row=0, column=0, sticky="w", pady=(2, 0))
 
         status_lbl = ctk.CTkLabel(
             info,
@@ -304,8 +305,9 @@ class VariatorApp(ctk.CTk):
             font=("Inter", 11),
             text_color=status_color,
             anchor="w",
+            height=16,
         )
-        status_lbl.grid(row=1, column=0, sticky="w")
+        status_lbl.grid(row=1, column=0, sticky="w", pady=(0, 2))
 
         del_btn = ctk.CTkButton(
             card,

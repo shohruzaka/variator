@@ -30,7 +30,7 @@ def test_e2e_full_workflow(tmp_path: Path):
     assert "MUVAFFAQIYATLI YAKUNLANDI" in result.output
     
     # Fayllar yaratilganligini tekshiramiz
-    assert (tmp_path / "Variant_1.docx").exists()
-    assert (tmp_path / "Variant_2.docx").exists()
+    assert (tmp_path / "1-variant.docx").exists()
+    assert (tmp_path / "2-variant.docx").exists()
     assert (tmp_path / "Javoblar.docx").exists()
     assert (tmp_path / "Javoblar.xlsx").exists()

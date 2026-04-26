@@ -72,7 +72,7 @@ def validate(questions: list[Question]) -> list[ValidationError]:
         Topilgan xatolar ro'yxati. Bo'sh ro'yxat — xato yo'q.
     """
     errors: list[ValidationError] = []
-    seen_texts: dict[str, int] = {}
+    seen_texts: dict[str, tuple[str, int]] = {}
 
     for q in questions:
         errors.extend(_validate_single(q))
@@ -151,11 +151,11 @@ def _validate_single(q: Question) -> list[ValidationError]:
 
 
 def _check_duplicate(
-    q: Question, seen_texts: dict[str, int]
+    q: Question, seen_texts: dict[str, tuple[str, int]]
 ) -> list[ValidationError]:
     """Savol matnining takrorligini tekshiradi.
 
-    `seen_texts` lug'ati normallashtirilgan matn → birinchi savol raqami
+    `seen_texts` lug'ati normallashtirilgan matn → (manba fayl, savol raqami)
     juftliklarini saqlaydi. Agar shu matn allaqachon uchragan bo'lsa,
     xato qaytariladi.
 
@@ -166,17 +166,17 @@ def _check_duplicate(
     Returns:
         Takror savol topilsa — bitta xato, aks holda bo'sh ro'yxat.
     """
-    normalized = q.text.strip().lower()
+    normalized = " ".join(q.text.strip().lower().split())
 
     if normalized in seen_texts:
-        first_number = seen_texts[normalized]
+        first_file, first_number = seen_texts[normalized]
         return [ValidationError(
             source_file=q.source_file,
             question_number=q.number,
             message=(
-                f"Takror savol matni (savol #{first_number} bilan bir xil)"
+                f"Takror savol matni ({first_file} faylidagi savol #{first_number} bilan bir xil)"
             ),
         )]
 
-    seen_texts[normalized] = q.number
+    seen_texts[normalized] = (q.source_file, q.number)
     return []

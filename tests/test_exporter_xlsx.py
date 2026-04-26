@@ -44,10 +44,10 @@ def test_export_answers_to_xlsx(tmp_path: Path):
     assert rows[0] == ("Variant", "1", "2")
     
     # 2. 1-Variant javoblari (q1=C, q2=D)
-    assert rows[1] == ("1-Variant", "C", "D")
+    assert rows[1] == ("1-variant", "C", "D")
     
     # 3. 2-Variant javoblari (q3=B, q4=A)
-    assert rows[2] == ("2-Variant", "B", "A")
+    assert rows[2] == ("2-variant", "B", "A")
 
 
 def test_export_answers_empty_variants_xlsx(tmp_path: Path):

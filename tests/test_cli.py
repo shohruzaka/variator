@@ -64,7 +64,7 @@ def test_cli_valid_run_end_to_end(tmp_path, monkeypatch):
     monkeypatch.setattr("src.cli.parse_docx", lambda *a, **kw: [q1])
     monkeypatch.setattr("src.cli.validate", lambda *a, **kw: [])
     monkeypatch.setattr("src.cli.generate_variants", lambda *a, **kw: [v1])
-    monkeypatch.setattr("src.cli.export_variants_to_docx", lambda *a, **kw: [tmp_path / "Variant_1.docx"])
+    monkeypatch.setattr("src.cli.export_variants_to_docx", lambda *a, **kw: [tmp_path / "1-variant.docx"])
     monkeypatch.setattr("src.cli.export_answers_to_docx", lambda *a, **kw: tmp_path / "Javoblar.docx")
     monkeypatch.setattr("src.cli.export_answers_to_xlsx", lambda *a, **kw: tmp_path / "Javoblar.xlsx")
     
@@ -78,7 +78,7 @@ def test_cli_valid_run_end_to_end(tmp_path, monkeypatch):
     
     assert result.exit_code == 0
     assert "MUVAFFAQIYATLI YAKUNLANDI" in result.output
-    assert "Variant_1.docx" in result.output
+    assert "1-variant.docx" in result.output
 
 
 def test_cli_validation_error_stops_execution(tmp_path, monkeypatch):

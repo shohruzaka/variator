@@ -38,8 +38,8 @@ def test_export_variants_creates_files(tmp_path: Path):
     assert output_dir.exists()
     
     file_names = [f.name for f in saved_files]
-    assert "Variant_1.docx" in file_names
-    assert "Variant_2.docx" in file_names
+    assert "1-variant.docx" in file_names
+    assert "2-variant.docx" in file_names
     
     for f in saved_files:
         assert f.exists()
@@ -53,14 +53,14 @@ def test_export_variants_content(tmp_path: Path):
     saved_files = export_variants_to_docx(variants, output_dir)
     
     # 1-variant faylini ochib tekshiramiz
-    doc1_path = next(f for f in saved_files if f.name == "Variant_1.docx")
+    doc1_path = next(f for f in saved_files if f.name == "1-variant.docx")
     doc1 = Document(str(doc1_path))
     
     paragraphs = [p.text for p in doc1.paragraphs if p.text.strip()]
 
     # Kutilgan tarkib (talaba/guruh qatorlari ham bor, lekin tartib emas,
     # mazmun muhim — moslashuvchan tekshiramiz):
-    assert any("1-Variant" in p for p in paragraphs)
+    assert any("1-variant" in p for p in paragraphs)
     assert any("1. Savol 1" in p for p in paragraphs)
     assert any("A) a1" in p for p in paragraphs)
     assert any("D) d1" in p for p in paragraphs)
@@ -92,13 +92,20 @@ def test_export_answers_to_docx(tmp_path: Path):
     
     # Kutilgan format:
     # Javoblar kaliti
-    # 1-Variant
-    # 1-C, 2-D
-    # 2-Variant
-    # 1-B, 2-A
+    # 1-variant
+    # (Jadval formatida)
     
     assert "Javoblar kaliti" in paragraphs[0]
-    assert "1-Variant" in paragraphs[1]
-    assert "1-C, 2-D" in paragraphs[2]
-    assert "2-Variant" in paragraphs[3]
-    assert "1-B, 2-A" in paragraphs[4]
+    assert "1-variant" in paragraphs[1]
+    assert "2-variant" in paragraphs[2]
+    
+    tables = doc.tables
+    assert len(tables) >= 2
+    
+    # 1-variant jadvali
+    assert [c.text for c in tables[0].rows[0].cells] == ["1", "2"]
+    assert [c.text for c in tables[0].rows[1].cells] == ["C", "D"]
+    
+    # 2-variant jadvali
+    assert [c.text for c in tables[1].rows[0].cells] == ["1", "2"]
+    assert [c.text for c in tables[1].rows[1].cells] == ["B", "A"]
