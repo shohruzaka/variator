@@ -53,6 +53,14 @@ class VariatorApp(ctk.CTk):
         self.geometry("1100x720")
         self.minsize(850, 700)
 
+        # Ikonkani o'rnatish (app.ico loyiha asosiy papkasida bo'lishi kerak)
+        icon_path = Path(__file__).parent.parent / "quiz.ico"
+        if icon_path.exists() and sys.platform == "win32":
+            try:
+                self.iconbitmap(str(icon_path))
+            except Exception:
+                pass
+
         # Oynani ishga tushganda maksimal o'lchamda (maximized) ochish
         try:
             if sys.platform == "win32":
