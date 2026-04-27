@@ -54,7 +54,7 @@ def _setup_document_format(doc: Document, font_size: int = 12):
 
 
 def _add_answer_table(doc: Document, num_questions: int):
-    """Variant oxirida javoblarni belgilash uchun jadval qo'shadi."""
+    """Javoblarni belgilash uchun jadval qo'shadi."""
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(12)
     p.paragraph_format.space_after = Pt(4)
@@ -67,6 +67,9 @@ def _add_answer_table(doc: Document, num_questions: int):
         chunk = min(chunk_size, num_questions - i)
         table = doc.add_table(rows=2, cols=chunk)
         table.style = 'Table Grid'
+        
+        table.rows[0].height = Pt(18)
+        table.rows[1].height = Pt(24) # O'quvchi javob yozadigan qatorni kattaroq qildik
         
         for j in range(chunk):
             q_num = i + j + 1
@@ -83,7 +86,7 @@ def _add_answer_table(doc: Document, num_questions: int):
             cell_bottom.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         p_space = doc.add_paragraph()
-        p_space.paragraph_format.space_after = Pt(6)
+        p_space.paragraph_format.space_after = Pt(2)
 
 def _add_formatted_runs(paragraph, text: str):
     """Matn ichidagi `kod` qismlarini ajratib, alohida shrift (Consolas) beradi."""
@@ -98,10 +101,71 @@ def _add_formatted_runs(paragraph, text: str):
         else:
             pass # Asosiy shrift (Times New Roman) meros qilib olinadi
 
+
+def _add_document_header(
+    doc: Document,
+    subject_name: str,
+    assessment_type: str,
+    variant_label: str,
+) -> None:
+    """Hujjat tepasiga sarlavha va talaba ma'lumotlarini chiroyli formatda yozadi."""
+    
+    # 1. Variant sarlavhasi (O'rtada, Katta o'lchamda)
+    p_variant = doc.add_paragraph()
+    p_variant.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_variant.paragraph_format.space_before = Pt(0)
+    p_variant.paragraph_format.space_after = Pt(8)
+    run_variant = p_variant.add_run(variant_label)
+    run_variant.bold = True
+    run_variant.font.name = 'Times New Roman'
+    run_variant.font.size = Pt(14)
+
+    # 2. Fan va Nazorat turi
+    if subject_name:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(2)
+        run_label = p.add_run("Fan: ")
+        run_label.bold = True
+        run_label.font.name = 'Times New Roman'
+        run_value = p.add_run(subject_name)
+        run_value.font.name = 'Times New Roman'
+
+    if assessment_type:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(2)
+        run_label = p.add_run("Nazorat turi: ")
+        run_label.bold = True
+        run_label.font.name = 'Times New Roman'
+        run_value = p.add_run(assessment_type)
+        run_value.font.name = 'Times New Roman'
+
+    # 3. Talaba ma'lumotlari (F.I.Sh, Guruh, Sana)
+    p_student = doc.add_paragraph()
+    p_student.paragraph_format.space_before = Pt(6)
+    p_student.paragraph_format.space_after = Pt(4)
+    run_s_label = p_student.add_run("F.I.Sh: ")
+    run_s_label.bold = True
+    run_s_label.font.name = 'Times New Roman'
+    p_student.add_run("__________________________")
+
+    p_info = doc.add_paragraph()
+    p_info.paragraph_format.space_after = Pt(12)
+    run_g_label = p_info.add_run("Guruh: ")
+    run_g_label.bold = True
+    run_g_label.font.name = 'Times New Roman'
+    p_info.add_run("_______  ")
+    
+    run_d_label = p_info.add_run("Sana: ")
+    run_d_label.bold = True
+    run_d_label.font.name = 'Times New Roman'
+    p_info.add_run("________")
+
 def export_variants_to_docx(
-    variants: list[Variant], 
-    output_dir: str | Path, 
+    variants: list[Variant],
+    output_dir: str | Path,
     font_size: int = 12,
+    subject_name: str = "",
+    assessment_type: str = "",
     progress_cb: Callable[[int, int], None] | None = None
 ) -> list[Path]:
     """Variantlarni alohida Word fayllariga yozadi.
@@ -110,6 +174,8 @@ def export_variants_to_docx(
         variants: Generatsiya qilingan test variantlari ro'yxati.
         output_dir: Fayllar saqlanadigan papka manzili.
         font_size: Word hujjatining shrift o'lchami (standart 12).
+        subject_name: Fan nomi (bo'sh bo'lsa yozilmaydi).
+        assessment_type: Nazorat turi (bo'sh bo'lsa yozilmaydi).
         progress_cb: Jarayonni foizda ko'rsatish uchun callback.
 
     Returns:
@@ -117,25 +183,20 @@ def export_variants_to_docx(
     """
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
-    
+
     saved_files: list[Path] = []
 
     for idx, variant in enumerate(variants):
         doc = Document()
-        
+
         # Formatni qo'llash (Albom, 3 ta kalonka, belgilangan shrift)
         _setup_document_format(doc, font_size)
+
+        # Sarlavha (fan nomi, nazorat turi va variant raqami)
+        _add_document_header(doc, subject_name, assessment_type, f"{variant.number}-variant")
         
-        # Sarlavha
-        heading = doc.add_heading(f"{variant.number}-variant", level=1)
-        heading.style.font.name = 'Times New Roman'
-        heading.paragraph_format.space_before = Pt(0)
-        heading.paragraph_format.space_after = Pt(0)
-        
-        # Talaba ma'lumotlari uchun joy
-        doc.add_paragraph("Talaba: ___________________________")
-        p_info = doc.add_paragraph("Guruh: ______________")
-        p_info.paragraph_format.space_after = Pt(12)  # To'liq bo'sh qator o'rniga biroz joy qoldirish
+        # Jadval qo'shish
+        _add_answer_table(doc, len(variant.questions))
         
         # Har bir savolni yozish
         for q in variant.questions:
@@ -155,9 +216,6 @@ def export_variants_to_docx(
                 else:
                     p_opt.paragraph_format.space_after = Pt(0)
             
-        # Jadval qo'shish
-        _add_answer_table(doc, len(variant.questions))
-        
         file_name = f"{variant.number}-variant.docx"
         file_path = out_path / file_name
         doc.save(str(file_path))
@@ -170,9 +228,11 @@ def export_variants_to_docx(
 
 
 def export_all_variants_to_single_docx(
-    variants: list[Variant], 
-    output_dir: str | Path, 
+    variants: list[Variant],
+    output_dir: str | Path,
     font_size: int = 12,
+    subject_name: str = "",
+    assessment_type: str = "",
     progress_cb: Callable[[int, int], None] | None = None
 ) -> Path:
     """Barcha variantlarni bitta Word fayliga yozadi (har biri yangi varaqdan boshlanadi).
@@ -181,6 +241,8 @@ def export_all_variants_to_single_docx(
         variants: Generatsiya qilingan test variantlari ro'yxati.
         output_dir: Fayl saqlanadigan papka manzili.
         font_size: Word hujjatining shrift o'lchami (standart 12).
+        subject_name: Fan nomi (bo'sh bo'lsa yozilmaydi).
+        assessment_type: Nazorat turi (bo'sh bo'lsa yozilmaydi).
         progress_cb: Jarayonni foizda ko'rsatish uchun callback.
 
     Returns:
@@ -188,21 +250,17 @@ def export_all_variants_to_single_docx(
     """
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
-    
+
     doc = Document()
-    
+
     # Formatni qo'llash (Albom, 3 ta kalonka, belgilangan shrift)
     _setup_document_format(doc, font_size)
 
     for idx, variant in enumerate(variants):
-        heading = doc.add_heading(f"{variant.number}-variant", level=1)
-        heading.style.font.name = 'Times New Roman'
-        heading.paragraph_format.space_before = Pt(0)
-        heading.paragraph_format.space_after = Pt(0)
+        _add_document_header(doc, subject_name, assessment_type, f"{variant.number}-variant")
         
-        doc.add_paragraph("Talaba: ___________________________")
-        p_info = doc.add_paragraph("Guruh: ______________")
-        p_info.paragraph_format.space_after = Pt(12)
+        # Jadval qo'shish
+        _add_answer_table(doc, len(variant.questions))
         
         for q in variant.questions:
             p_q = doc.add_paragraph()
@@ -213,9 +271,6 @@ def export_all_variants_to_single_docx(
                 _add_formatted_runs(p_opt, f"{opt.letter}) {opt.text}")
                 p_opt.paragraph_format.space_after = Pt(8) if i == len(q.options) - 1 else Pt(0)
                 
-        # Jadval qo'shish
-        _add_answer_table(doc, len(variant.questions))
-        
         if idx < len(variants) - 1:
             doc.add_page_break()  # Keyingi variantni yangi sahifadan boshlash
             
@@ -227,12 +282,19 @@ def export_all_variants_to_single_docx(
     return file_path
 
 
-def export_answers_to_docx(variants: list[Variant], output_path: str | Path) -> Path:
+def export_answers_to_docx(
+    variants: list[Variant],
+    output_path: str | Path,
+    subject_name: str = "",
+    assessment_type: str = "",
+) -> Path:
     """Barcha variantlarning javoblarini bitta Word fayliga yozadi.
 
     Args:
         variants: Generatsiya qilingan test variantlari ro'yxati.
         output_path: Saqlanadigan Word faylining to'liq manzili.
+        subject_name: Fan nomi (bo'sh bo'lsa yozilmaydi).
+        assessment_type: Nazorat turi (bo'sh bo'lsa yozilmaydi).
 
     Returns:
         Yaratilgan faylning manzili.
@@ -243,6 +305,22 @@ def export_answers_to_docx(variants: list[Variant], output_path: str | Path) -> 
     doc = Document()
     title = doc.add_heading("Javoblar kaliti", level=1)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    if subject_name:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(0)
+        run_label = p.add_run("Fan: ")
+        run_label.bold = True
+        p.add_run(subject_name)
+
+    if assessment_type:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(0)
+        run_label = p.add_run("Nazorat turi: ")
+        run_label.bold = True
+        p.add_run(assessment_type)
 
     for variant in variants:
         h2 = doc.add_heading(f"{variant.number}-variant", level=2)
@@ -256,6 +334,9 @@ def export_answers_to_docx(variants: list[Variant], output_path: str | Path) -> 
             chunk = min(chunk_size, ans_len - i)
             table = doc.add_table(rows=2, cols=chunk)
             table.style = 'Table Grid'
+            
+            table.rows[0].height = Pt(18)
+            table.rows[1].height = Pt(18)
             
             for j in range(chunk):
                 q_num = i + j + 1
@@ -272,7 +353,8 @@ def export_answers_to_docx(variants: list[Variant], output_path: str | Path) -> 
                 cell_bottom.paragraphs[0].runs[0].font.color.rgb = RGBColor(0, 112, 192) # Ko'k rangda
                 cell_bottom.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
             
-            doc.add_paragraph().paragraph_format.space_after = Pt(4)
+            p_space = doc.add_paragraph()
+            p_space.paragraph_format.space_after = Pt(2)
 
     doc.save(str(out_path))
     return out_path
