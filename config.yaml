@@ -1,14 +1,11 @@
 # Test Variant Generator sozlamalari
-# Bu fayldan standart qiymatlar o'qiladi. CLI orqali ularni o'zgartirish mumkin.
+# Bu fayldan standart qiymatlar o'qiladi. GUI'dagi maydonlar ustun turadi.
 
 # Generatsiya qilinadigan variantlar soni
 variants_count: 5
 
 # Har bir variantdagi savollar soni (agar kiritilmasa, barcha savollar olinadi)
 # questions_per_variant: 30
-
-# Reproducibility uchun boshlang'ich seed
-base_seed: 42
 
 # Natijalar saqlanadigan papka
 output_dir: "output"

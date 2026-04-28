@@ -16,7 +16,6 @@ class Config:
 
     variants_count: int = 5
     questions_per_variant: int | None = None
-    base_seed: int = 42
     output_dir: str = "output"
 
     @classmethod
@@ -35,6 +34,5 @@ class Config:
         return cls(
             variants_count=data.get("variants_count", 5),
             questions_per_variant=data.get("questions_per_variant", None),
-            base_seed=data.get("base_seed", 42),
             output_dir=data.get("output_dir", "output"),
         )

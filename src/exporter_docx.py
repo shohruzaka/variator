@@ -97,9 +97,6 @@ def _add_formatted_runs(paragraph, text: str):
         run = paragraph.add_run(part)
         if i % 2 == 1:  # ` ichidagi qism (toq indekslar)
             run.font.name = 'Consolas'
-            # run.font.color.rgb = RGBColor(190, 30, 45) # Agar xohlasangiz kodni to'q qizil rangda ham qilish mumkin
-        else:
-            pass # Asosiy shrift (Times New Roman) meros qilib olinadi
 
 
 def _add_document_header(
@@ -161,73 +158,6 @@ def _add_document_header(
     p_info.add_run("________")
 
 def export_variants_to_docx(
-    variants: list[Variant],
-    output_dir: str | Path,
-    font_size: int = 12,
-    subject_name: str = "",
-    assessment_type: str = "",
-    progress_cb: Callable[[int, int], None] | None = None
-) -> list[Path]:
-    """Variantlarni alohida Word fayllariga yozadi.
-
-    Args:
-        variants: Generatsiya qilingan test variantlari ro'yxati.
-        output_dir: Fayllar saqlanadigan papka manzili.
-        font_size: Word hujjatining shrift o'lchami (standart 12).
-        subject_name: Fan nomi (bo'sh bo'lsa yozilmaydi).
-        assessment_type: Nazorat turi (bo'sh bo'lsa yozilmaydi).
-        progress_cb: Jarayonni foizda ko'rsatish uchun callback.
-
-    Returns:
-        Yaratilgan fayllarning to'liq manzillari ro'yxati.
-    """
-    out_path = Path(output_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    saved_files: list[Path] = []
-
-    for idx, variant in enumerate(variants):
-        doc = Document()
-
-        # Formatni qo'llash (Albom, 3 ta kalonka, belgilangan shrift)
-        _setup_document_format(doc, font_size)
-
-        # Sarlavha (fan nomi, nazorat turi va variant raqami)
-        _add_document_header(doc, subject_name, assessment_type, f"{variant.number}-variant")
-        
-        # Jadval qo'shish
-        _add_answer_table(doc, len(variant.questions))
-        
-        # Har bir savolni yozish
-        for q in variant.questions:
-            # Savol matni (q.number bilan)
-            p_q = doc.add_paragraph()
-            _add_formatted_runs(p_q, f"{q.number}. {q.text}")
-            p_q.paragraph_format.space_after = Pt(2)  # Savol va uning variantlari orasini yanada yaqinlashtirish
-            
-            # Variantlarni yozish
-            for i, opt in enumerate(q.options):
-                p_opt = doc.add_paragraph()
-                _add_formatted_runs(p_opt, f"{opt.letter}) {opt.text}")
-
-                # Agar bu oxirgi variant (D) bo'lsa, keyingi savoldan ajralib turishi uchun ozroq bo'shliq tashlaymiz
-                if i == len(q.options) - 1:
-                    p_opt.paragraph_format.space_after = Pt(8)
-                else:
-                    p_opt.paragraph_format.space_after = Pt(0)
-            
-        file_name = f"{variant.number}-variant.docx"
-        file_path = out_path / file_name
-        doc.save(str(file_path))
-        saved_files.append(file_path)
-
-        if progress_cb:
-            progress_cb(idx + 1, len(variants))
-
-    return saved_files
-
-
-def export_all_variants_to_single_docx(
     variants: list[Variant],
     output_dir: str | Path,
     font_size: int = 12,

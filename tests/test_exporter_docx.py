@@ -1,9 +1,7 @@
 """Exporter (Word) uchun unit testlar (7-bosqich)."""
 
-import os
 from pathlib import Path
 
-import pytest
 from docx import Document
 
 from src.exporter_docx import export_variants_to_docx
@@ -25,42 +23,31 @@ def _make_sample_variants() -> list[Variant]:
     return [v1, v2]
 
 
-def test_export_variants_creates_files(tmp_path: Path):
-    """Eksport funksiyasi kutilgan fayllarni ko'rsatilgan papkada yaratishi kerak."""
+def test_export_variants_creates_single_file(tmp_path: Path):
+    """Eksport funksiyasi barcha variantlarni bitta `Barcha_variantlar.docx` fayliga yozishi kerak."""
     variants = _make_sample_variants()
-    
-    # tmp_path - pytest tomonidan berilgan vaqtinchalik papka
     output_dir = tmp_path / "output"
-    
-    saved_files = export_variants_to_docx(variants, output_dir)
-    
-    assert len(saved_files) == 2
+
+    result_path = export_variants_to_docx(variants, output_dir)
+
     assert output_dir.exists()
-    
-    file_names = [f.name for f in saved_files]
-    assert "1-variant.docx" in file_names
-    assert "2-variant.docx" in file_names
-    
-    for f in saved_files:
-        assert f.exists()
+    assert result_path.exists()
+    assert result_path.name == "Barcha_variantlar.docx"
 
 
 def test_export_variants_content(tmp_path: Path):
-    """Yaratilgan fayllar to'g'ri tarkibga (sarlavha, savollar) ega ekanligini tekshirish."""
+    """Yaratilgan faylda har ikkala variant sarlavhasi va savollari mavjud bo'lishi kerak."""
     variants = _make_sample_variants()
     output_dir = tmp_path / "output"
-    
-    saved_files = export_variants_to_docx(variants, output_dir)
-    
-    # 1-variant faylini ochib tekshiramiz
-    doc1_path = next(f for f in saved_files if f.name == "1-variant.docx")
-    doc1 = Document(str(doc1_path))
-    
-    paragraphs = [p.text for p in doc1.paragraphs if p.text.strip()]
 
-    # Kutilgan tarkib (talaba/guruh qatorlari ham bor, lekin tartib emas,
-    # mazmun muhim — moslashuvchan tekshiramiz):
+    result_path = export_variants_to_docx(variants, output_dir)
+
+    doc = Document(str(result_path))
+    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+
+    # Ikkala variant ham bitta hujjatda bo'lishi kerak
     assert any("1-variant" in p for p in paragraphs)
+    assert any("2-variant" in p for p in paragraphs)
     assert any("1. Savol 1" in p for p in paragraphs)
     assert any("A) a1" in p for p in paragraphs)
     assert any("D) d1" in p for p in paragraphs)
@@ -68,12 +55,12 @@ def test_export_variants_content(tmp_path: Path):
 
 
 def test_export_empty_variants_list(tmp_path: Path):
-    """Bo'sh ro'yxat berilganda xatosiz ishlashi va papka yaratishi kerak."""
+    """Bo'sh ro'yxat berilganda ham fayl yaratilishi va papka mavjud bo'lishi kerak."""
     output_dir = tmp_path / "output"
-    saved_files = export_variants_to_docx([], output_dir)
-    
-    assert len(saved_files) == 0
-    assert output_dir.exists() # Papka bo'sh bo'lsa ham yaratiladi
+    result_path = export_variants_to_docx([], output_dir)
+
+    assert output_dir.exists()
+    assert result_path.exists()
 
 
 def test_export_answers_to_docx(tmp_path: Path):

@@ -1,6 +1,7 @@
 """Dasturning grafik interfeysi (GUI) asosiy oynasi."""
 
 import os
+import secrets
 import sys
 import threading
 import tkinter as tk
@@ -9,7 +10,7 @@ from tkinter import messagebox
 from pathlib import Path
 
 from src.config import Config
-from src.exporter_docx import export_answers_to_docx, export_variants_to_docx, export_all_variants_to_single_docx
+from src.exporter_docx import export_answers_to_docx, export_variants_to_docx
 from src.exporter_xlsx import export_answers_to_xlsx
 from src.generator import generate_variants
 from src.models import Question
@@ -300,14 +301,11 @@ class VariatorApp(ctk.CTk):
         self.action_frame.grid(row=1, column=1, padx=(15, 30), pady=(0, 30), sticky="ew")
         self.action_frame.grid_columnconfigure(0, weight=1)
 
-        self.generate_btn = ctk.CTkButton(self.action_frame, text="Alohida fayllarga", font=("Inter", 15, "bold"), height=42, corner_radius=12, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", command=lambda: self.start_generation(single_file=False))
+        self.generate_btn = ctk.CTkButton(self.action_frame, text="Variantlarni yaratish", font=("Inter", 15, "bold"), height=42, corner_radius=12, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", command=self.start_generation)
         self.generate_btn.grid(row=0, column=0, pady=(0, 10), sticky="ew")
 
-        self.generate_single_btn = ctk.CTkButton(self.action_frame, text="Bitta faylga", font=("Inter", 15, "bold"), height=42, corner_radius=12, fg_color=("#4C6EF5", "#7C9CFF"), hover_color=("#3B5BDB", "#5C7CFA"), text_color="#FFFFFF", command=lambda: self.start_generation(single_file=True))
-        self.generate_single_btn.grid(row=1, column=0, pady=(0, 10), sticky="ew")
-
         self.progress_bar = ctk.CTkProgressBar(self.action_frame, mode="determinate", fg_color=("#E5E7EB", "#3F3F46"), progress_color=("#4C6EF5", "#7C9CFF"), height=6)
-        self.progress_bar.grid(row=2, column=0, pady=(8, 0), sticky="ew")
+        self.progress_bar.grid(row=1, column=0, pady=(8, 0), sticky="ew")
         self.progress_bar.set(0)
         self.progress_bar.grid_remove()  # Boshida yashirin turadi
 
@@ -569,7 +567,7 @@ class VariatorApp(ctk.CTk):
         self.file_analysis.clear()
         self._update_file_listbox()
 
-    def start_generation(self, single_file: bool = False):
+    def start_generation(self):
         # 1. Tanlangan fayllarni tekshirish
         if not self.selected_files:
             messagebox.showwarning("Ogohlantirish", "Iltimos, kamida bitta test faylini tanlang!")
@@ -614,20 +612,17 @@ class VariatorApp(ctk.CTk):
 
         # 3. Tugmani bloklash va jarayonni fonda boshlash
         self.generate_btn.configure(state="disabled", text="Tayyorlanmoqda... 0%")
-        self.generate_single_btn.configure(state="disabled", text="Tayyorlanmoqda... 0%")
         self.progress_bar.grid()  # Progress barni ko'rsatish
         self.progress_bar.set(0)
         threading.Thread(
             target=self._run_generation_task,
-            args=(count, qpv, font_size, single_file, subject_name, assessment_type),
+            args=(count, qpv, font_size, subject_name, assessment_type),
             daemon=True,
         ).start()
 
     def _update_progress(self, percent: int):
         """Generatsiya foizini yangilaydi."""
-        text = f"Tayyorlanmoqda... {percent}%"
-        self.generate_btn.configure(text=text)
-        self.generate_single_btn.configure(text=text)
+        self.generate_btn.configure(text=f"Tayyorlanmoqda... {percent}%")
         self.progress_bar.set(percent / 100.0)
 
     def _run_generation_task(
@@ -635,7 +630,6 @@ class VariatorApp(ctk.CTk):
         count: int,
         qpv: int | None,
         font_size: int,
-        single_file: bool,
         subject_name: str = "",
         assessment_type: str = "",
     ):
@@ -674,11 +668,11 @@ class VariatorApp(ctk.CTk):
 
             self.after(0, lambda: self._update_progress(25))
 
-            # Generatsiya
+            # Generatsiya — har safar yangi tasodifiy seed (turli variantlar uchun)
             variants = generate_variants(
                 all_questions,
                 count=count,
-                base_seed=cfg.base_seed,
+                base_seed=secrets.randbits(31),
                 questions_per_variant=qpv
             )
 
@@ -689,22 +683,13 @@ class VariatorApp(ctk.CTk):
                 self.after(0, lambda: self._update_progress(pct))
 
             # Eksport
-            if single_file:
-                export_all_variants_to_single_docx(
-                    variants, output_dir,
-                    font_size=font_size,
-                    subject_name=subject_name,
-                    assessment_type=assessment_type,
-                    progress_cb=progress_cb,
-                )
-            else:
-                export_variants_to_docx(
-                    variants, output_dir,
-                    font_size=font_size,
-                    subject_name=subject_name,
-                    assessment_type=assessment_type,
-                    progress_cb=progress_cb,
-                )
+            export_variants_to_docx(
+                variants, output_dir,
+                font_size=font_size,
+                subject_name=subject_name,
+                assessment_type=assessment_type,
+                progress_cb=progress_cb,
+            )
 
             self.after(0, lambda: self._update_progress(95))
             export_answers_to_docx(
@@ -730,8 +715,7 @@ class VariatorApp(ctk.CTk):
 
     def _reset_action_ui(self):
         self.progress_bar.grid_remove()
-        self.generate_btn.configure(state="normal", text="Alohida fayllarga")
-        self.generate_single_btn.configure(state="normal", text="Bitta faylga")
+        self.generate_btn.configure(state="normal", text="Variantlarni yaratish")
 
     def _show_validation_errors(self, errors):
         err_window = ctk.CTkToplevel(self)

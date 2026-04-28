@@ -13,4 +13,6 @@ env/
 output/
 ~$*.docx
 ~$*.xlsx
-gui_state.json
+build/
+dist/
+*.spec
